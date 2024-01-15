@@ -1,0 +1,84 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                     Silver Bullets Catcher.mq5  |
+//|                        Developed by Forex Robot Easy Team         |
+//|                                https://forexroboteasy.com         |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries and modules
+#include <Trade\Trade.mqh>
+#include <Timeseries\Timeseries.mqh>
+
+// Define constants and variables
+const int TICKET = 0;
+double stopLoss = 0.0;
+double takeProfit = 0.0;
+double lotSize = 0.1;
+
+CTrade trade;
+CTimeseries series;
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Initialize trade module
+    trade.SetExpertMagicNumber(123456);
+    trade.SetDeviationInPips(10);
+    
+    // Initialize timeseries module
+    series.SetSymbol(Symbol());
+    series.SetTimeframe(PERIOD_CURRENT);
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check if there is an open position
+    if(trade.PositionSelect(Symbol()))
+    {
+        // Check if the position is in profit
+        if(trade.PositionProfit() > 0)
+        {
+            // Close the position at a profit
+            trade.PositionClose(TICKET);
+            Print('Position closed at a profit');
+        }
+    }
+    else
+    {
+        // Check if there is a silver bullet signal
+        if(series.iSilverBullet(0) != 0)
+        {
+            // Open a new position
+            if(trade.PositionOpen(Symbol(), ORDER_TYPE_BUY, lotSize, 0, stopLoss, takeProfit))
+            {
+                Print('New position opened');
+            }
+        }
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Clean up resources
+    trade.Clean();
+    series.Clean();
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator 'Silver Bullet'                                 |
+//+------------------------------------------------------------------+
+int iSilverBullet(const int index)
+{
+    // Custom indicator logic goes here
+    return(0);
+}
